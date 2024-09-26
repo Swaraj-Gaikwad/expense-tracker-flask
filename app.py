@@ -4,18 +4,21 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# Load transactions from JSON
 def load_transactions():
     try:
         with open('transaction.json', 'r') as file:
             return json.load(file)
     except FileNotFoundError:
         return[]
-    
+
+# Save transactions to JSON    
 def save_transactions(transactions):
     with open('transactions.json', 'w') as file:
         json.dump(transactions, file)
 
 
+# Home route to display transactions and net balance
 @app.route('/')
 def index():
     transactions = load_transactions()
@@ -25,6 +28,8 @@ def index():
     return render_template('index.html', transactions = transactions, net_balance = net_balance)
 
 
+
+# Route to add a new transaction
 @app.route('/add', methods = ['POST'])
 def add_transactions():
     transactions = load_transactions()
@@ -37,6 +42,7 @@ def add_transactions():
     save_transactions(transactions)
     return redirect(url_for('index'))
 
+# Route to delete a transaction
 @app.route('/delete/<int:index>', methods=['POST'])
 def delete_transaction(index):
     transactions = load_transactions()
