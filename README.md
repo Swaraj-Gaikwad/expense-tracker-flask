@@ -33,7 +33,10 @@ cd expense-tracker-flask
 - 4. **Install the required dependencies**:
 pip install flask
 
-- 5. **Open the app in a browser**
+- 5. **Run the APP**:
+python app.py
+
+- 6. **Open the app in a browser**
 
 **How to Use**:
 - Home Page: The home page displays all existing transactions along with the net balance.
@@ -54,7 +57,7 @@ pip install flask
 - ├── README.md             # Project documentation
 - └── .gitignore            # Files and directories to ignore in Git
 
-**License**
+**License**  
 This project is licensed under the MIT License. Feel free to use and modify the code as needed.
 
 
