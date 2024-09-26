@@ -4,52 +4,75 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Load transactions from JSON
+@app.context_processor
+def utility_processor():
+    return dict(enumerate=enumerate)
+
+
+# Load transactions from a JSON file
 def load_transactions():
     try:
-        with open('transaction.json', 'r') as file:
+        with open('transactions.json', 'r') as file:
             return json.load(file)
-    except FileNotFoundError:
-        return[]
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []  # If the file doesn't exist or is empty, return an empty list
 
-# Save transactions to JSON    
+# Write transactions to a JSON file
 def save_transactions(transactions):
     with open('transactions.json', 'w') as file:
-        json.dump(transactions, file)
+        json.dump(transactions, file, indent=4)
 
+# Initialize the transactions list
+transactions = load_transactions()
 
-# Home route to display transactions and net balance
 @app.route('/')
 def index():
-    transactions = load_transactions()
-    total_income = sum(t['amount'] for t in transactions if t['type'] == 'income')
-    total_expenses = sum(t['amount'] for t in transactions if t['type'] == 'expense')
-    net_balance = total_income - total_expenses
-    return render_template('index.html', transactions = transactions, net_balance = net_balance)
+    # Calculate net balance
+    net_balance = sum([t["amount"] for t in transactions])
+    return render_template('index.html', transactions=transactions, net_balance=net_balance)
 
 
 
 # Route to add a new transaction
-@app.route('/add', methods = ['POST'])
-def add_transactions():
-    transactions = load_transactions()
-    amount = float(request.form['amount'])
+@app.route('/add', methods=['POST'])
+def add_transaction():
+    # Extract form data
     description = request.form['description']
-    date = request.form['date'] or str(datetime.today().date())
-    trans_type = request.form['type']
-    transaction = {"amount": amount, "description": description, "date": date, "type": trans_type}
-    transactions.append(transaction)
+    amount = float(request.form['amount'])
+    type_of_transaction = request.form['type']  # 'income' or 'expense'
+    
+    # Ensure expenses are negative and income is positive
+    if type_of_transaction == 'expense':
+        amount = -amount  # Negate the amount for expenses
+    
+    # Add the transaction to the in-memory list
+    transactions.append({
+        "description": description,
+        "amount": amount,
+        "type": type_of_transaction
+    })
+    
+    # Save updated transactions to the JSON file
     save_transactions(transactions)
-    return redirect(url_for('index'))
+    
+    return redirect('/')
+
+
 
 # Route to delete a transaction
 @app.route('/delete/<int:index>', methods=['POST'])
 def delete_transaction(index):
-    transactions = load_transactions()
-    if 0 <= index < len(transactions):
+    try:
+        # Remove the transaction from the in-memory list
         transactions.pop(index)
+        
+        # Save the updated list of transactions to the JSON file
         save_transactions(transactions)
-    return redirect(url_for('index'))
+    except IndexError:
+        pass  # Handle invalid index gracefully
+    
+    return redirect('/')
+
 
 if __name__ == '__main__':
     app.run(debug = True)
