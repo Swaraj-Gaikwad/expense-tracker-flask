@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href = "/static/style.css">
+</head>
+<body>
+    <h1>Expense Tracker</h1>
+
+    <h2>Net Balance: {{ net_balance }}</h2>
+
+    <form action="/add", method="POST">
+        <label>Amount: </label>
+        <input type="number" name="amount" required><br>
+
+        <label>Description: </label>
+        <input type="text" name="description" required><br>
+        
+        <label>Date: </label>
+        <input type="date" name="date"><br>
+
+        <label>Type: </label>
+        <select name="type" required>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+        </select><br>
+        
+        <button type="submit">Add Transaction</button>
+    </form>
+
+    <h2>Transactions</h2>
+    <ul>
+        {% for i, transaction in enumerate(transactions) %}
+            <li>{{ transaction.date }} - {{ transaction.type.capitalize() }}: {{ transaction.description }} ({{ transaction.amount }})
+                <form action="/delete/{{ i }}" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
